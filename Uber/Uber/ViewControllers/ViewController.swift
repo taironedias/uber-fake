@@ -8,6 +8,7 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseDatabase
 
 class ViewController: UIViewController {
 
@@ -25,9 +26,22 @@ class ViewController: UIViewController {
     }
     
     func login(auth: Auth) {
+        
+        let db = Database.database().reference()
+        let usuarios = db.child("usuarios")
+        
         auth.addStateDidChangeListener { (autenticacao, usuario) in
             if usuario != nil {
-                self.performSegue(withIdentifier: "seguePrincipal", sender: nil)
+                let refNode = usuarios.child(usuario!.uid)
+                refNode.observeSingleEvent(of: .value, with: { (snapshot) in
+                    
+                    let dados = snapshot.value as? NSDictionary
+                    let tipoUser = dados!["tipo"] as! String
+                    
+                    let segueName = tipoUser == "Passageiro" ? "seguePrincipal" : "segueLoginPrincipalMotor"
+                    self.performSegue(withIdentifier: segueName, sender: nil)
+                })
+                
             }
         }
     }

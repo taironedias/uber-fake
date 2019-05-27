@@ -9,13 +9,15 @@
 /* Begin PBXBuildFile section */
 		1808B8192298A4FF0006968B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1808B8182298A4FF0006968B /* AppDelegate.swift */; };
 		1808B81B2298A4FF0006968B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1808B81A2298A4FF0006968B /* ViewController.swift */; };
-		1808B81E2298A4FF0006968B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1808B81C2298A4FF0006968B /* Main.storyboard */; };
 		1808B8202298A5000006968B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1808B81F2298A5000006968B /* Assets.xcassets */; };
 		1808B8232298A5000006968B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1808B8212298A5000006968B /* LaunchScreen.storyboard */; };
 		1808B82B2298A6700006968B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1808B82A2298A6700006968B /* GoogleService-Info.plist */; };
 		1808B82F2298B8060006968B /* EntrarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1808B82E2298B8060006968B /* EntrarViewController.swift */; };
 		1808B8312298B8190006968B /* CadastroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1808B8302298B8190006968B /* CadastroViewController.swift */; };
 		1808B8332298CC5C0006968B /* PassageiroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1808B8322298CC5C0006968B /* PassageiroViewController.swift */; };
+		18097CC3229A083700E7A9BC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18097CC2229A083700E7A9BC /* Main.storyboard */; };
+		18097CC5229A0B4A00E7A9BC /* MotoristaTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18097CC4229A0B4A00E7A9BC /* MotoristaTableViewController.swift */; };
+		18097CC9229A219800E7A9BC /* ConfirmRequisicaoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18097CC8229A219800E7A9BC /* ConfirmRequisicaoViewController.swift */; };
 		2EFA944272A428385B4E41F2 /* Pods_Uber.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A31E42A0CA28FBC54F3E2D5 /* Pods_Uber.framework */; };
 /* End PBXBuildFile section */
 
@@ -23,7 +25,6 @@
 		1808B8152298A4FF0006968B /* Uber.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Uber.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1808B8182298A4FF0006968B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1808B81A2298A4FF0006968B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		1808B81D2298A4FF0006968B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		1808B81F2298A5000006968B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1808B8222298A5000006968B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1808B8242298A5000006968B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -31,6 +32,9 @@
 		1808B82E2298B8060006968B /* EntrarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntrarViewController.swift; sourceTree = "<group>"; };
 		1808B8302298B8190006968B /* CadastroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadastroViewController.swift; sourceTree = "<group>"; };
 		1808B8322298CC5C0006968B /* PassageiroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassageiroViewController.swift; sourceTree = "<group>"; };
+		18097CC2229A083700E7A9BC /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		18097CC4229A0B4A00E7A9BC /* MotoristaTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotoristaTableViewController.swift; sourceTree = "<group>"; };
+		18097CC8229A219800E7A9BC /* ConfirmRequisicaoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmRequisicaoViewController.swift; sourceTree = "<group>"; };
 		2A31E42A0CA28FBC54F3E2D5 /* Pods_Uber.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Uber.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		365C14CC5F63279B04D1826D /* Pods-Uber.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Uber.debug.xcconfig"; path = "Target Support Files/Pods-Uber/Pods-Uber.debug.xcconfig"; sourceTree = "<group>"; };
 		F4B2A355269187F6A1FD9EB2 /* Pods-Uber.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Uber.release.xcconfig"; path = "Target Support Files/Pods-Uber/Pods-Uber.release.xcconfig"; sourceTree = "<group>"; };
@@ -72,7 +76,7 @@
 				1808B8182298A4FF0006968B /* AppDelegate.swift */,
 				1808B82D2298B5FA0006968B /* Models */,
 				1808B82C2298B5ED0006968B /* ViewControllers */,
-				1808B81C2298A4FF0006968B /* Main.storyboard */,
+				18097CC2229A083700E7A9BC /* Main.storyboard */,
 				1808B81F2298A5000006968B /* Assets.xcassets */,
 				1808B8212298A5000006968B /* LaunchScreen.storyboard */,
 				1808B8242298A5000006968B /* Info.plist */,
@@ -88,6 +92,8 @@
 				1808B82E2298B8060006968B /* EntrarViewController.swift */,
 				1808B8302298B8190006968B /* CadastroViewController.swift */,
 				1808B8322298CC5C0006968B /* PassageiroViewController.swift */,
+				18097CC4229A0B4A00E7A9BC /* MotoristaTableViewController.swift */,
+				18097CC8229A219800E7A9BC /* ConfirmRequisicaoViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -179,7 +185,7 @@
 				1808B8232298A5000006968B /* LaunchScreen.storyboard in Resources */,
 				1808B82B2298A6700006968B /* GoogleService-Info.plist in Resources */,
 				1808B8202298A5000006968B /* Assets.xcassets in Resources */,
-				1808B81E2298A4FF0006968B /* Main.storyboard in Resources */,
+				18097CC3229A083700E7A9BC /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -245,6 +251,8 @@
 			files = (
 				1808B8332298CC5C0006968B /* PassageiroViewController.swift in Sources */,
 				1808B81B2298A4FF0006968B /* ViewController.swift in Sources */,
+				18097CC9229A219800E7A9BC /* ConfirmRequisicaoViewController.swift in Sources */,
+				18097CC5229A0B4A00E7A9BC /* MotoristaTableViewController.swift in Sources */,
 				1808B8192298A4FF0006968B /* AppDelegate.swift in Sources */,
 				1808B82F2298B8060006968B /* EntrarViewController.swift in Sources */,
 				1808B8312298B8190006968B /* CadastroViewController.swift in Sources */,
@@ -254,14 +262,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		1808B81C2298A4FF0006968B /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				1808B81D2298A4FF0006968B /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		1808B8212298A5000006968B /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (

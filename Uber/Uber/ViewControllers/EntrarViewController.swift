@@ -45,11 +45,17 @@ class EntrarViewController: UIViewController {
                         return
                     }
                     
-                    if usuario != nil {
-                        print("Usuário logado com suceoss! E-mail: "+String(describing: usuario?.user.email))
-                        self.performSegue(withIdentifier: "segueLogin", sender: nil)
+                    /*
+                     Valida se o usuário está logado.
+                     Caso o usuário esteja logado, será redirecionado automaticamente de acordo
+                     com o tipo de usuário com o evento criado na ViewController
+                     */
+                    if usuario == nil {
+                        print("Erro ao logar o usuário!")
+                        return
                     }
                     
+                    print("Usuário logado com suceoss! E-mail: "+String(describing: usuario?.user.email))
                 }
             }
         }

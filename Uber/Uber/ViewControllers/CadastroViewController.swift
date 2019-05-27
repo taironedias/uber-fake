@@ -8,9 +8,10 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseDatabase
 
 class CadastroViewController: UIViewController {
-
+    
     @IBOutlet weak var campoEmail: UITextField!
     @IBOutlet weak var campoNomeCompleto: UITextField!
     @IBOutlet weak var campoSenha: UITextField!
@@ -19,7 +20,7 @@ class CadastroViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Do any additional setup after loading the view.
     }
     
@@ -29,7 +30,7 @@ class CadastroViewController: UIViewController {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
     }
-
+    
     @IBAction func cadastrar(_ sender: Any) {
         let validacaoCampos = self.validarCampos()
         let validacaoSenhas = self.validarSenhas()
@@ -57,14 +58,36 @@ class CadastroViewController: UIViewController {
                             return
                         }
                         
-                        print("Sucesso ao cadastrar o usuário no Firebase!")
-                        
-                        // Validando se o usuário está logado
-                        if usuario != nil {
-                            self.performSegue(withIdentifier: "segueLoginCadastro", sender: nil)
-                        } else {
-                            print("Erro ao autenticar usuário")
+                        /*
+                         Valida se o usuário está logado.
+                         Caso o usuário esteja logado, será redirecionado automaticamente de acordo
+                         com o tipo de usuário com o evento criado na ViewController
+                         */
+                        if usuario == nil {
+                            print("Erro ao autenticar usuário, em cadastro")
+                            return
                         }
+                        
+                        print("Sucesso ao cadastrar o usuário e usuário logado!")
+                        
+                        // Recupera o valor do switch e seta a variávei tipoUser
+                        let tipoUser = self.switchTipoUsuario.isOn ? "Passageiro" : "Motorista"
+                        
+                        // Configura o database
+                        let db = Database.database().reference()
+                        let usuarios = db.child("usuarios")
+                        
+                        if let uidUser = auth.currentUser?.uid {
+                            
+                            let dadosUser = [
+                                "email": usuario!.user.email,
+                                "nome": nome,
+                                "tipo": tipoUser
+                            ]
+                            
+                            usuarios.child(uidUser).setValue(dadosUser)
+                        }
+                        
                     }
                 }
             }

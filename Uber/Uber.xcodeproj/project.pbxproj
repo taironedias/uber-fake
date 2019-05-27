@@ -18,6 +18,7 @@
 		18097CC3229A083700E7A9BC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18097CC2229A083700E7A9BC /* Main.storyboard */; };
 		18097CC5229A0B4A00E7A9BC /* MotoristaTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18097CC4229A0B4A00E7A9BC /* MotoristaTableViewController.swift */; };
 		18097CC9229A219800E7A9BC /* ConfirmRequisicaoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18097CC8229A219800E7A9BC /* ConfirmRequisicaoViewController.swift */; };
+		18730514229C5F2B009E1A4C /* Endereco.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18730513229C5F2B009E1A4C /* Endereco.swift */; };
 		2EFA944272A428385B4E41F2 /* Pods_Uber.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A31E42A0CA28FBC54F3E2D5 /* Pods_Uber.framework */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +36,7 @@
 		18097CC2229A083700E7A9BC /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		18097CC4229A0B4A00E7A9BC /* MotoristaTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotoristaTableViewController.swift; sourceTree = "<group>"; };
 		18097CC8229A219800E7A9BC /* ConfirmRequisicaoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmRequisicaoViewController.swift; sourceTree = "<group>"; };
+		18730513229C5F2B009E1A4C /* Endereco.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endereco.swift; sourceTree = "<group>"; };
 		2A31E42A0CA28FBC54F3E2D5 /* Pods_Uber.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Uber.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		365C14CC5F63279B04D1826D /* Pods-Uber.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Uber.debug.xcconfig"; path = "Target Support Files/Pods-Uber/Pods-Uber.debug.xcconfig"; sourceTree = "<group>"; };
 		F4B2A355269187F6A1FD9EB2 /* Pods-Uber.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Uber.release.xcconfig"; path = "Target Support Files/Pods-Uber/Pods-Uber.release.xcconfig"; sourceTree = "<group>"; };
@@ -101,6 +103,7 @@
 		1808B82D2298B5FA0006968B /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				18730513229C5F2B009E1A4C /* Endereco.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -255,6 +258,7 @@
 				18097CC5229A0B4A00E7A9BC /* MotoristaTableViewController.swift in Sources */,
 				1808B8192298A4FF0006968B /* AppDelegate.swift in Sources */,
 				1808B82F2298B8060006968B /* EntrarViewController.swift in Sources */,
+				18730514229C5F2B009E1A4C /* Endereco.swift in Sources */,
 				1808B8312298B8190006968B /* CadastroViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

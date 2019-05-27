@@ -21,6 +21,17 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
     var uberChamado = false
     var uberACaminho = false
     
+    
+    // Referencias para setar o local de destino
+    @IBOutlet weak var areaEndereco: UIView!
+    @IBOutlet weak var marcadorLocalPassageiro: UIView!
+    @IBOutlet weak var marcadorLocalDestino: UIView!
+    @IBOutlet weak var campoLocalDestino: UITextField!
+    
+    // Constantes de acesso ao Banco de Dados
+    let database = Database.database().reference()
+    let auth = Auth.auth()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -30,11 +41,9 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
         gerenciadorLocalizacao.startUpdatingLocation()
         
         // Verifica se já tem uma requisicao de Uber
-        let db = Database.database().reference()
-        let requisicoes = db.child("requisicoes")
-        let auth = Auth.auth()
+        let requisicoes = self.database.child("requisicoes")
         
-        if let emailUser = auth.currentUser?.email {
+        if let emailUser = self.auth.currentUser?.email {
             let consultaRequisicoes = requisicoes.queryOrdered(byChild: "email").queryEqual(toValue: emailUser)
             
             // Adicioando ouvinte para quando o usuario chamar o Uber
@@ -70,8 +79,15 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
             }
         }
         
+        // Configurando o arredondamento dos marcadores
+        self.marcadorLocalPassageiro.layer.cornerRadius = 7.5
+        self.marcadorLocalPassageiro.clipsToBounds = true
         
+        self.marcadorLocalDestino.layer.cornerRadius = 7.5
+        self.marcadorLocalDestino.clipsToBounds = true
         
+        self.areaEndereco.layer.cornerRadius = 10
+        self.areaEndereco.clipsToBounds = true
     }
     
     func analisaCorridaAceita(dataSnapshot: DataSnapshot) -> Bool {
@@ -85,6 +101,7 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
         }
         return false
     }
+    
     
     func exibirMotoristaAndPassageiro() {
         
@@ -124,11 +141,13 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
         
     }
     
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // Recupera as coordenadas do local atual
+        // Verifica se o Uber está a caminho. Como é um método automatico quando o local é atualizado, foi necessário fazer essa verificação aqui também
         if self.uberACaminho {
             self.exibirMotoristaAndPassageiro()
         } else {
+            // Recupera as coordenadas do local atual
             if let coordenadas = manager.location?.coordinate {
                 self.localUser = coordenadas
                 let regiao = MKCoordinateRegion.init(center: coordenadas, latitudinalMeters: 200, longitudinalMeters: 200)
@@ -146,17 +165,19 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
         }
     }
     
+    
     @IBAction func sairSistema(_ sender: Any) {
-        let autenticar = Auth.auth()
         do {
-            try autenticar.signOut()
+            try self.auth.signOut()
             dismiss(animated: true, completion: nil)
         } catch {
             print("Não foi possível deslogar o usuário")
         }
     }
     
+    
     @IBAction func chamarUber(_ sender: Any) {
+        // NO FIREBASE - Realtime database
         /*
          // These rules allow only logged-in people to read and write to the database
          {
@@ -167,48 +188,117 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
          }
          */
         // Iniciando a referencia do banco de dados
-        let database = Database.database().reference()
-        let requisicoes = database.child("requisicoes")
+        let requisicoes = self.database.child("requisicoes")
         
-        // Iniciando a referencia ao Auth
-        let auth = Auth.auth()
-        
-        if let emailUser = auth.currentUser?.email {
-            
+        if let emailUser = self.auth.currentUser?.email {
             if self.uberChamado {   // Uber chamado
                 // Removendo a requisição
                 requisicoes.queryOrdered(byChild: "email").queryEqual(toValue: emailUser).observeSingleEvent(of: DataEventType.childAdded) { (snapshot) in
                     snapshot.ref.removeValue()
                 }
+                
                 self.alternaBtnChamarUber(title: "Chamar Uber", redM: 0, greenM: 0, blueM: 0)
                 
             } else {                // Uber não foi chamado ainda
                 
-                // Recuperando nome do usuário
-                let usuarios = database.child("usuarios").child(auth.currentUser!.uid)
-                usuarios.observeSingleEvent(of: .value) { (snapshot) in
-                    
-                    if let dados = snapshot.value as? NSDictionary {
-                        
-                        let nomeUser = dados["nome"] as? String
-                        
-                        let dadosUser = [
-                            "email": emailUser,
-                            "nome": nomeUser,
-                            "latitude": self.localUser.latitude,
-                            "longitude": self.localUser.longitude
-                            ] as [String: Any]
-                        
-                        // Salvando a requisição
-                        requisicoes.childByAutoId().setValue(dadosUser)
-                        
-                        self.alternaBtnChamarUber(title: "Cancelar Uber", redM: 0.831, greenM: 0.237, blueM: 0.146)
+                // Recuperando endereco de destino
+                if let enderecoDestino = self.campoLocalDestino.text {
+                    if enderecoDestino == "" {
+                        print("Endereço não digitado!")
+                        return
                     }
-                }
+                    
+                    CLGeocoder().geocodeAddressString(enderecoDestino) { (local, error) in
+                        if error != nil {
+                            print("Erro ao recuperar endereço de destino")
+                            return
+                        }
+                        
+                        if let dadosLocal = local?.first {
+                            
+                            let endereco = self.recuperandoEndereco(dadosLocal: dadosLocal)
+                            
+                            let alerta = UIAlertController(title: "Confirme seu endereço!", message: endereco.enderecoCompleto(), preferredStyle: .alert)
+                            let actionCancelar = UIAlertAction(title: "Cancelar", style: .cancel, handler: nil)
+                            let actionConfirmar = UIAlertAction(title: "Confirmar", style: .default, handler: { (alertAction) in
+                                
+                                // Recuperando nome do usuário
+                                let usuarios = self.database.child("usuarios").child(self.auth.currentUser!.uid)
+                                usuarios.observeSingleEvent(of: .value) { (snapshot) in
+                                    
+                                    if let dados = snapshot.value as? NSDictionary {
+                                        
+                                        let nomeUser = dados["nome"] as? String
+                                        
+                                        let dadosUser = [
+                                            "email": emailUser,
+                                            "nome": nomeUser!,
+                                            "latitude": self.localUser.latitude,
+                                            "longitude": self.localUser.longitude,
+                                            "destinoLatitude": endereco.latitude,
+                                            "destinoLongitude": endereco.longitude
+                                            ] as [String: Any]
+                                        
+                                        // Salvando a requisição
+                                        requisicoes.childByAutoId().setValue(dadosUser)
+                                        
+                                        self.alternaBtnChamarUber(title: "Cancelar Uber", redM: 0.831, greenM: 0.237, blueM: 0.146)
+                                    }
+                                }
+                                
+                            })
+                            
+                            alerta.addAction(actionCancelar)
+                            alerta.addAction(actionConfirmar)
+                            
+                            self.present(alerta, animated: true, completion: nil)
+                            
+                        }
+                    } // end CLGeocoder()
+                } // fim do else "Uber não foi chamado ainda"
             }
         }
     }
     
+    
+    func recuperandoEndereco(dadosLocal: CLPlacemark) -> Endereco {
+        let endereco = Endereco()
+        
+        if dadosLocal.thoroughfare != nil {
+            endereco.rua = dadosLocal.thoroughfare!
+        }
+        
+        if dadosLocal.subThoroughfare != nil {
+            endereco.numero = dadosLocal.subThoroughfare!
+        }
+        
+        if dadosLocal.subLocality != nil {
+            endereco.bairro = dadosLocal.subLocality!
+        }
+        
+        if dadosLocal.administrativeArea != nil {
+            endereco.estado = dadosLocal.administrativeArea!
+        }
+        
+        if dadosLocal.locality != nil {
+            endereco.cidade = dadosLocal.locality!
+        }
+        
+        if dadosLocal.postalCode != nil {
+            endereco.cep = dadosLocal.postalCode!
+        }
+        
+        if let lat = dadosLocal.location?.coordinate.latitude {
+            endereco.latitude = lat
+        }
+        
+        if let long = dadosLocal.location?.coordinate.longitude {
+            endereco.longitude = long
+        }
+        
+        
+        return endereco
+    }
     
     
     func alternaBtnChamarUber(title: String, redM: CGFloat, greenM: CGFloat, blueM: CGFloat) {
@@ -216,5 +306,8 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
         self.btnChamarUber.backgroundColor = UIColor(displayP3Red: redM, green: greenM, blue: blueM, alpha: 1)
         self.uberChamado = !self.uberChamado
     }
+    
+    
+
     
 }

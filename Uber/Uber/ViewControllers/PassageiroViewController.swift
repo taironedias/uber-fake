@@ -343,7 +343,11 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
                         self.exibePointA(localA: self.localUser, titleA: "Seu local")
                     }
                 } // end if dados
+                return
             }
+            
+            self.exibePointA(localA: self.localUser, titleA: "Meu local")
+            
         }
     }
     

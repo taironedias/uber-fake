@@ -148,6 +148,8 @@ class MotoristaTableViewController: UITableViewController, CLLocationManagerDele
                     
                     let distanciaMetros = motorLocation.distance(from: passageiroLocation)
                     let distanciaKM = round(distanciaMetros / 1000)
+                    let mensagem = distanciaKM == 0.0 ? "\(round(distanciaMetros)) metros de distância" : "\(distanciaKM) km de distância"
+                    
                     
                     var requisicaoMotorista = ""
                     if let emailMotorista = dados["motoristaEmail"] as? String {
@@ -166,7 +168,7 @@ class MotoristaTableViewController: UITableViewController, CLLocationManagerDele
                     
                     if let nomePassageiro = dados["nome"] as? String {
                         cell.textLabel?.text = "\(nomePassageiro) \(requisicaoMotorista)"
-                        cell.detailTextLabel?.text = "\(distanciaKM) km de distância"
+                        cell.detailTextLabel?.text = mensagem
                     }
                     
                 }

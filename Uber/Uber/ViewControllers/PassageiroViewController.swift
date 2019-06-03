@@ -73,6 +73,8 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
                         self.loadingTelaStatus(statusCorrida: statusR, dados: dados)
                     } else {
                         print("Não existe motoristaLatitude e motoristaLongitude no Firebase!")
+                        self.uberChamado = true
+                        self.exibePointA(localA: self.localUser, titleA: "Seu local")
                         self.setAlternaButton(title: "Cancelar Uber", enabled: true, redM: 0.831, greenM: 0.237, blueM: 0.146, opacidade: 1)
                     }
                 }
@@ -128,6 +130,8 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
                         self.loadingTelaStatus(statusCorrida: statusR, dados: dados)
                     } else {
                         print("Não existe motoristaLatitude e motoristaLongitude no Firebase!")
+                        self.uberChamado = true
+                        self.exibePointA(localA: self.localUser, titleA: "Seu local")
                         self.setAlternaButton(title: "Cancelar Uber", enabled: true, redM: 0.831, greenM: 0.237, blueM: 0.146, opacidade: 1)
                     }
                 }
@@ -202,6 +206,24 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
         self.btnChamarUber.setTitle(title, for: .normal)
         self.btnChamarUber.isEnabled = enabled
         self.btnChamarUber.backgroundColor = UIColor(displayP3Red: redM, green: greenM, blue: blueM, alpha: opacidade!)
+    }
+    
+    
+    
+    func exibePointA(localA: CLLocationCoordinate2D, titleA: String) {
+        
+        let regiao = MKCoordinateRegion.init(center: localA, latitudinalMeters: 200, longitudinalMeters: 200)
+        self.mapa.setRegion(regiao, animated: true)
+        
+        // Remove anotacoes antes de criar
+        self.mapa.removeAnnotations(self.mapa.annotations)
+        
+        // Criando o anotacoes para o local do usuário
+        let anotacaoUsuario = MKPointAnnotation()
+        anotacaoUsuario.coordinate = localA
+        anotacaoUsuario.title = titleA
+        self.mapa.addAnnotation(anotacaoUsuario)
+        
     }
     
     
@@ -317,6 +339,9 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
                     if let statusR = dados["status"] as? String {
                         self.loadingTelaStatus(statusCorrida: statusR, dados: dados)
                     } // end if statusR
+                    else {
+                        self.exibePointA(localA: self.localUser, titleA: "Seu local")
+                    }
                 } // end if dados
             }
         }
@@ -361,7 +386,7 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
                 requisicoes.queryOrdered(byChild: "email").queryEqual(toValue: emailUser).observeSingleEvent(of: DataEventType.childAdded) { (snapshot) in
                     snapshot.ref.removeValue()
                 }
-                
+                self.uberChamado = false
                 self.alternaBtnChamarUber(title: "Chamar Uber", condition: false, redM: 0, greenM: 0, blueM: 0)
                 
             } else {                // Uber não foi chamado ainda
@@ -406,7 +431,7 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
                                         
                                         // Salvando a requisição
                                         requisicoes.childByAutoId().setValue(dadosUser)
-                                        
+                                        self.uberChamado = true
                                         self.alternaBtnChamarUber(title: "Cancelar Uber", condition: true, redM: 0.831, greenM: 0.237, blueM: 0.146)
                                     }
                                 }

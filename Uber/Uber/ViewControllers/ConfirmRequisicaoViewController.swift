@@ -169,8 +169,8 @@ class ConfirmRequisicaoViewController: UIViewController, CLLocationManagerDelega
                     self.pegarPassageiro()
                 }
             }
-            // DESCOMENTAR AS INSTRUÇÕES ABAIXO NA VERSÃO FINAL DO APP
-            /*
+            
+            
             // Exibir caminho para o passageiro no mapa nativo do iOS
             let passageiroCLL = CLLocation(latitude: self.localPassageiro.latitude, longitude: self.localPassageiro.longitude)
             CLGeocoder().reverseGeocodeLocation(passageiroCLL, completionHandler: { (local, error) in
@@ -187,7 +187,7 @@ class ConfirmRequisicaoViewController: UIViewController, CLLocationManagerDelega
                     let opcoes = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
                     mapaItem.openInMaps(launchOptions: opcoes)
                 }
-            })*/
+            })
             
         } // end if StatusCorrida.EmRequisicao
         else if self.status == StatusCorrida.IniciarViagem {

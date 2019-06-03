@@ -4,7 +4,21 @@
 //
 //  Created by Tairone Dias on 24/05/19.
 //  Copyright © 2019 DiasDevelopers. All rights reserved.
-//
+
+/* Lista de localização para ser colocado como teste no Debug -> Locations -> Custom Locations...
+ Arena Fonte Nova:
+ -12,981093
+ -38,504585
+ 
+ Campo da Pólvora:
+ -12,979211
+ -38,507500
+ 
+ Baixa do Sapateiro:
+ -12,976028
+ -38,508694
+ */
+
 
 import UIKit
 import FirebaseAuth
@@ -20,6 +34,7 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
     var localMotorista = CLLocationCoordinate2D()
     var uberChamado = false
     var uberACaminho = false
+    var status: StatusCorrida = .EmRequisicao
     
     
     // Referencias para setar o local de destino
@@ -53,31 +68,35 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
                     return
                 }
                 
-                // Essa estrutura trata o seguinte cenario: o usuario chamou o Uber, o motorista aceitou e o celular fechou. Caso o usuario chamou o Uber e o celular fechou, continua conforme a execucao anterior que só muda a cor e nome do button
-                if self.analisaCorridaAceita(dataSnapshot: snapshot) {
-                    self.exibirMotoristaAndPassageiro()
-                } else {
-                    self.alternaBtnChamarUber(title: "Cancelar Uber", redM: 0.831, greenM: 0.237, blueM: 0.146)
-                    print("Não existe latMotor e longMotor no Firebase!")
+                if let dados = snapshot.value as? [String: Any] {
+                    if let statusR = dados["status"] as? String {
+                        self.loadingTelaStatus(statusCorrida: statusR, dados: dados)
+                    } else {
+                        print("Não existe motoristaLatitude e motoristaLongitude no Firebase!")
+                        self.setAlternaButton(title: "Cancelar Uber", enabled: true, redM: 0.831, greenM: 0.237, blueM: 0.146, opacidade: 1)
+                    }
                 }
                 
             }
             
-            // Adicionando ouvinte para quando o motorista aceitar a corrida
+            
             consultaRequisicoes.observe(.childChanged) { (snapshot) in
-                if snapshot.value == nil {
-                    print("snapshot está vazio!")
-                    return
+                if let dados = snapshot.value as? [String: Any] {
+                    if snapshot.value == nil {
+                        print("snapshot está vazio!")
+                        return
+                    }
+                    
+                    if let statusR = dados["status"] as? String {
+                        print("viewDidLoad -> if statusR")
+                        self.loadingTelaStatus(statusCorrida: statusR, dados: dados)
+                    }
+                    
                 }
-                
-                if self.analisaCorridaAceita(dataSnapshot: snapshot) {
-                    self.exibirMotoristaAndPassageiro()
-                } else {
-                    print("Não foi possível recuperar latMotor e longMotor no Firebase!")
-                }
-                
             }
+            
         }
+        
         
         // Configurando o arredondamento dos marcadores
         self.marcadorLocalPassageiro.layer.cornerRadius = 7.5
@@ -90,80 +109,219 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
         self.areaEndereco.clipsToBounds = true
     }
     
-    func analisaCorridaAceita(dataSnapshot: DataSnapshot) -> Bool {
-        if let dados = dataSnapshot.value as? [String: Any] {
-            if let latMotor = dados["latMotor"] as? CLLocationDegrees {
-                if let longMotor = dados["longMotor"] as? CLLocationDegrees {
-                    self.localMotorista = CLLocationCoordinate2D(latitude: latMotor, longitude: longMotor)
-                    return true
+    
+    
+    override func viewDidAppear(_ animated: Bool) {
+        let requisicoes = self.database.child("requisicoes")
+        if let emailUser = self.auth.currentUser?.email {
+            let consultaRequisicoes = requisicoes.queryOrdered(byChild: "email").queryEqual(toValue: emailUser)
+            
+            // Adicioando ouvinte para quando o usuario chamar o Uber
+            consultaRequisicoes.observe(.childAdded) { (snapshot) in
+                if snapshot.value == nil {
+                    print("snapshot está vazio!")
+                    return
                 }
+                
+                if let dados = snapshot.value as? [String: Any] {
+                    if let statusR = dados["status"] as? String {
+                        self.loadingTelaStatus(statusCorrida: statusR, dados: dados)
+                    } else {
+                        print("Não existe motoristaLatitude e motoristaLongitude no Firebase!")
+                        self.setAlternaButton(title: "Cancelar Uber", enabled: true, redM: 0.831, greenM: 0.237, blueM: 0.146, opacidade: 1)
+                    }
+                }
+                
+            }
+            
+        }
+    }
+    
+    
+    
+    func loadingTelaStatus(statusCorrida: String, dados: [String: Any]) {
+        
+        if let motoristaLatitude = dados["motoristaLatitude"] as? CLLocationDegrees {
+            if let motoristaLongitude = dados["motoristaLongitude"] as? CLLocationDegrees {
+                self.localMotorista = CLLocationCoordinate2D(latitude: motoristaLatitude, longitude: motoristaLongitude)
             }
         }
-        return false
+        
+        switch statusCorrida {
+            
+        case StatusCorrida.PegarPassageiro.rawValue:
+            print("StatusCorrida: \(statusCorrida)")
+            self.status = .PegarPassageiro
+            self.exibePointAPointB(localA: self.localUser, localB: self.localMotorista, titleA: "Seu local", titleB: "Motorista")
+            self.exibeChangedButton()
+            break
+            
+        case StatusCorrida.IniciarViagem.rawValue:
+            print("StatusCorrida: \(statusCorrida)")
+            self.status = .IniciarViagem
+            self.exibePointAPointB(localA: self.localUser, localB: self.localMotorista, titleA: "Seu local", titleB: "Motorista")
+            self.exibeChangedButton()
+            break
+            
+        case StatusCorrida.EmViagem.rawValue:
+            print("StatusCorrida: \(statusCorrida)")
+            self.status = .EmViagem
+            
+            if let latDestino = dados["destinoLatitude"] as? Double {
+                if let lonDestino = dados["destinoLongitude"] as? Double {
+                    let location2D = CLLocationCoordinate2D(latitude: latDestino, longitude: lonDestino)
+                    self.exibePointAPointB(localA: self.localMotorista, localB: location2D, titleA: "Partida", titleB: "Destino")
+                }
+            }
+            
+            self.setAlternaButton(title: "Em Viagem", enabled: false, redM: 1, greenM: 0.149, blueM: 0)
+            break
+            
+        case StatusCorrida.ViagemFinalizada.rawValue:
+            print("StatusCorrida: \(statusCorrida)")
+            self.status = .ViagemFinalizada
+            
+            if let latDestino = dados["destinoLatitude"] as? Double {
+                if let lonDestino = dados["destinoLongitude"] as? Double {
+                    let location2D = CLLocationCoordinate2D(latitude: latDestino, longitude: lonDestino)
+                    self.exibePointAPointB(localA: self.localMotorista, localB: location2D, titleA: "Partida", titleB: "Destino")
+                }
+            }
+            
+            self.finalizadaViagem()
+            break
+        default:
+            print("StatusCorrida (default): \(statusCorrida)")
+            self.status = .EmRequisicao
+        }
     }
     
     
-    func exibirMotoristaAndPassageiro() {
+    
+    func setAlternaButton(title: String, enabled: Bool, redM: CGFloat, greenM: CGFloat, blueM: CGFloat, opacidade: CGFloat? = 0.6) {
+        self.btnChamarUber.setTitle(title, for: .normal)
+        self.btnChamarUber.isEnabled = enabled
+        self.btnChamarUber.backgroundColor = UIColor(displayP3Red: redM, green: greenM, blue: blueM, alpha: opacidade!)
+    }
+    
+    
+    
+    func exibePointAPointB(localA: CLLocationCoordinate2D, localB: CLLocationCoordinate2D, titleA: String, titleB: String) {
         
-        /* Calcula a distância entre motorista e passageiro */
-        let motoristaLocation = CLLocation(latitude: self.localMotorista.latitude, longitude: self.localMotorista.longitude)
-        let passageiroLocation = CLLocation(latitude: self.localUser.latitude, longitude: self.localUser.longitude)
+        // Fazendo o calculo para setar a visualizacao de ambos (motorista e passageiro) na tela. O  * 300000 é para a visualizacao está adequada conforme a diferença
+        let latDiff = abs(localA.latitude - localB.latitude) * 300000
+        let longDiff = abs(localA.longitude - localB.longitude)  * 300000
         
-        let distancia = motoristaLocation.distance(from: passageiroLocation)
-        let distanciaKM = round(distancia / 1000)
-        self.btnChamarUber.setTitle("Motorista à \(distanciaKM) km", for: .normal)
-        self.btnChamarUber.backgroundColor = UIColor(displayP3Red: 0.067, green: 0.576, blue: 0.604, alpha: 1)
-        
-        /* Exibir o passageiro e motorista no mapa */
-        self.uberACaminho = true
-        
-            // Fazendo o calculo para setar a visualizacao de ambos (motorista e passageiro) na tela. O  * 300000 é para a visualizacao está adequada conforme a diferença
-        let latDiff = abs(self.localUser.latitude - self.localMotorista.latitude) * 300000
-        let longDiff = abs(self.localUser.longitude - self.localMotorista.longitude)  * 300000
-        
-            // Criando a regiao para setar no mapa
-        let regiao = MKCoordinateRegion.init(center: self.localUser, latitudinalMeters: latDiff, longitudinalMeters: longDiff)
+        // Criando a regiao para setar no mapa
+        let regiao = MKCoordinateRegion.init(center: localA, latitudinalMeters: latDiff, longitudinalMeters: longDiff)
         self.mapa.setRegion(regiao, animated: true)
         
-            // Remove anotacoes antes de criar
+        // Remove anotacoes antes de criar
         self.mapa.removeAnnotations(self.mapa.annotations)
         
-            // Criando o anotacoes para o local do usuário
-        let annotMotorista = MKPointAnnotation()
-        annotMotorista.coordinate = self.localMotorista
-        annotMotorista.title = "Motorista"
-        self.mapa.addAnnotation(annotMotorista)
+        // Anotação Partida
+        let annotPartida = MKPointAnnotation()
+        annotPartida.coordinate = localA
+        annotPartida.title = titleA
+        self.mapa.addAnnotation(annotPartida)
         
-        let annotPassageiro = MKPointAnnotation()
-        annotPassageiro.coordinate = self.localUser
-        annotPassageiro.title = "Seu local"
-        self.mapa.addAnnotation(annotPassageiro)
+        // Anotação Destino
+        let annotDestino = MKPointAnnotation()
+        annotDestino.coordinate = localB
+        annotDestino.title = titleB
+        self.mapa.addAnnotation(annotDestino)
         
     }
+    
+    
+    
+    func calculaDistancia(latitudePointA: Double, longitudePointA: Double, latitudePointB: Double, longitudePointB: Double) -> Double {
+        
+        let pointA = CLLocation(latitude: latitudePointA, longitude: longitudePointA)
+        let pointB = CLLocation(latitude: latitudePointB, longitude: longitudePointB)
+        
+        let distancia = pointA.distance(from: pointB)
+        
+        return distancia
+    }
+    
+    
+    
+    func exibeChangedButton() {
+        let distancia = self.calculaDistancia(latitudePointA: self.localUser.latitude, longitudePointA: self.localUser.longitude, latitudePointB: self.localMotorista.latitude, longitudePointB: self.localMotorista.longitude)
+        print("Distancia: \(distancia)")
+        let distanciaKM = round(distancia / 1000)
+        var distanciaFinal = distanciaKM
+        var mensagem = "Motorista está a \(distanciaFinal) Km"
+        if distanciaKM == 0.0 {
+            distanciaFinal = round(distancia)
+            mensagem = "Motorista está a \(distanciaFinal) metros"
+        }
+        self.setAlternaButton(title: mensagem, enabled: false, redM: 0.502, greenM: 0.502, blueM: 0.502)
+    }
+    
+    
+    
+    func finalizadaViagem() {
+        let requisicoes = self.database.child("requisicoes")
+        if let emailUser = self.auth.currentUser?.email {
+            let consultaRequisicoes = requisicoes.queryOrdered(byChild: "email").queryEqual(toValue: emailUser)
+            
+            // Adicioando ouvinte para quando o usuario chamar o Uber
+            consultaRequisicoes.observeSingleEvent(of: .childAdded, with: { (snapshot) in
+                if snapshot.value == nil {
+                    print("snapshot está vazio!")
+                    return
+                }
+                
+                if let dados = snapshot.value as? [String: Any] {
+                    if let precoR = dados["precoViagem"] as? Double {
+                    
+                        // Atualizando button na tela, mas antes formataremos o precoViagem para o padrão pt_BR
+                        let nf = NumberFormatter()
+                        nf.numberStyle = .decimal
+                        nf.maximumFractionDigits = 2
+                        nf.locale = Locale(identifier: "pt_BR")
+                        let precoFormatado = nf.string(from: NSNumber(value: precoR))
+                        if let precoFinal = precoFormatado {
+                            self.setAlternaButton(title: "Viagem Finalizada! Pagar: R$ \(precoFinal)", enabled: false, redM: 0.502, greenM: 0.502, blueM: 0.502, opacidade: 1)
+                        }
+                    
+                    }
+                }
+                
+            })
+            
+        }
+    }
+    
     
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // Verifica se o Uber está a caminho. Como é um método automatico quando o local é atualizado, foi necessário fazer essa verificação aqui também
-        if self.uberACaminho {
-            self.exibirMotoristaAndPassageiro()
-        } else {
-            // Recupera as coordenadas do local atual
-            if let coordenadas = manager.location?.coordinate {
-                self.localUser = coordenadas
-                let regiao = MKCoordinateRegion.init(center: coordenadas, latitudinalMeters: 200, longitudinalMeters: 200)
-                self.mapa.setRegion(regiao, animated: true)
-                
-                // Remove anotacoes antes de criar
-                self.mapa.removeAnnotations(self.mapa.annotations)
-                
-                // Criando o anotacoes para o local do usuário
-                let anotacaoUsuario = MKPointAnnotation()
-                anotacaoUsuario.coordinate = coordenadas
-                anotacaoUsuario.title = "Seu local"
-                self.mapa.addAnnotation(anotacaoUsuario)
+        // Recupera as coordenadas do local atual
+        if let coordenadas = manager.location?.coordinate {
+            self.localUser = coordenadas
+            // Atualizando local com base nos status
+            self.atualizarLocation()
+        }
+    }
+    
+    
+    
+    func atualizarLocation() {
+        if let emailUser = self.auth.currentUser?.email {
+            let requisicoesDB = self.database.child("requisicoes")
+            let consultaRequisicao = requisicoesDB.queryOrdered(byChild: "email").queryEqual(toValue: emailUser)
+            consultaRequisicao.observeSingleEvent(of: .childAdded) { (snapshot) in
+                if let dados = snapshot.value as? [String: Any] {
+                    if let statusR = dados["status"] as? String {
+                        self.loadingTelaStatus(statusCorrida: statusR, dados: dados)
+                    } // end if statusR
+                } // end if dados
             }
         }
     }
+    
     
     
     @IBAction func sairSistema(_ sender: Any) {
@@ -174,6 +332,7 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
             print("Não foi possível deslogar o usuário")
         }
     }
+    
     
     
     @IBAction func chamarUber(_ sender: Any) {
@@ -191,13 +350,19 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
         let requisicoes = self.database.child("requisicoes")
         
         if let emailUser = self.auth.currentUser?.email {
+            print("status uber chamado")
+            print(self.uberChamado)
+            print("status uber a caminho")
+            print(self.uberACaminho)
+            
+            /* Essa estrutura de if, é para o caso onde o passageiro chamou e uber e no mesmo instante quer desistir da viagem */
             if self.uberChamado {   // Uber chamado
                 // Removendo a requisição
                 requisicoes.queryOrdered(byChild: "email").queryEqual(toValue: emailUser).observeSingleEvent(of: DataEventType.childAdded) { (snapshot) in
                     snapshot.ref.removeValue()
                 }
                 
-                self.alternaBtnChamarUber(title: "Chamar Uber", redM: 0, greenM: 0, blueM: 0)
+                self.alternaBtnChamarUber(title: "Chamar Uber", condition: false, redM: 0, greenM: 0, blueM: 0)
                 
             } else {                // Uber não foi chamado ainda
                 
@@ -242,7 +407,7 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
                                         // Salvando a requisição
                                         requisicoes.childByAutoId().setValue(dadosUser)
                                         
-                                        self.alternaBtnChamarUber(title: "Cancelar Uber", redM: 0.831, greenM: 0.237, blueM: 0.146)
+                                        self.alternaBtnChamarUber(title: "Cancelar Uber", condition: true, redM: 0.831, greenM: 0.237, blueM: 0.146)
                                     }
                                 }
                                 
@@ -259,6 +424,7 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
             }
         }
     }
+    
     
     
     func recuperandoEndereco(dadosLocal: CLPlacemark) -> Endereco {
@@ -301,13 +467,13 @@ class PassageiroViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     
-    func alternaBtnChamarUber(title: String, redM: CGFloat, greenM: CGFloat, blueM: CGFloat) {
+    
+    func alternaBtnChamarUber(title: String, condition: Bool, redM: CGFloat, greenM: CGFloat, blueM: CGFloat) {
         self.btnChamarUber.setTitle(title, for: .normal)
+        self.uberChamado = condition
         self.btnChamarUber.backgroundColor = UIColor(displayP3Red: redM, green: greenM, blue: blueM, alpha: 1)
-        self.uberChamado = !self.uberChamado
     }
     
     
-
     
 }

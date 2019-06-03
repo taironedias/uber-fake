@@ -4,7 +4,20 @@
 //
 //  Created by Tairone Dias on 25/05/19.
 //  Copyright © 2019 DiasDevelopers. All rights reserved.
-//
+
+/* Lista de localização para ser colocado como teste no Debug -> Locations -> Custom Locations...
+ Arena Fonte Nova:
+ -12,981093
+ -38,504585
+ 
+ Perto da Baixa do Sapateiro:
+ -12,976028
+ -38,508694
+ 
+ Baixa do Sapateiro:
+ -12,975680
+ -38,509008
+ */
 
 import UIKit
 import FirebaseAuth
@@ -17,26 +30,55 @@ class MotoristaTableViewController: UITableViewController, CLLocationManagerDele
     var gerenciadorLocalizacao = CLLocationManager()
     var localMotorista = CLLocationCoordinate2D()
     
+    // Configura banco de dados
+    let requisicoesDB = Database.database().reference().child("requisicoes")
+    let autenticacao = Auth.auth()
+    
+    // Timer
+    var timerControle = Timer()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // 
+        // Iniciando o processo de geolocalização
         self.gerenciadorLocalizacao.delegate = self
         gerenciadorLocalizacao.desiredAccuracy = kCLLocationAccuracyBest
         gerenciadorLocalizacao.requestWhenInUseAuthorization()
         gerenciadorLocalizacao.startUpdatingLocation()
         
-        // Configura banco de dados
-        let db = Database.database().reference()
-        let requisicoes = db.child("requisicoes")
-        
         // Recuperando os dados
-        requisicoes.observe(.childAdded) { (snapshot) in
-            print("Snapshot1: "+String(describing: snapshot))
+        requisicoesDB.observe(.childAdded) { (snapshot) in
+            // print("Snapshot1: "+String(describing: snapshot))
+            self.listaRequisicoes.append(snapshot)
+            self.tableView.reloadData()
+        }
+        
+        // Limpar uma requisição
+        requisicoesDB.observe(.childRemoved) { (snapshot) in
+            var indice = 0
+            for requisicao in self.listaRequisicoes {
+                if requisicao.key == snapshot.key {
+                    self.listaRequisicoes.remove(at: indice)
+                }
+                indice += 1
+            }
+            self.tableView.reloadData()
+        }
+        
+        // Atualizando requisicao no tableView
+        requisicoesDB.observe(.childChanged) { (snapshot) in
+            var indice = 0
+            for item in self.listaRequisicoes {
+                if item.key == snapshot.key {
+                    self.listaRequisicoes.remove(at: indice)
+                }
+                indice += 1
+            }
             self.listaRequisicoes.append(snapshot)
             self.tableView.reloadData()
         }
     }
+    
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let coordenadas = manager.location?.coordinate {
@@ -46,9 +88,8 @@ class MotoristaTableViewController: UITableViewController, CLLocationManagerDele
 
     
     @IBAction func deslogarMotorista(_ sender: Any) {
-        let autenticar = Auth.auth()
         do {
-            try autenticar.signOut()
+            try self.autenticacao.signOut()
             dismiss(animated: true, completion: nil)
         } catch {
             print("Não foi possível deslogar o usuário")
@@ -106,11 +147,27 @@ class MotoristaTableViewController: UITableViewController, CLLocationManagerDele
                     let passageiroLocation = CLLocation(latitude: latPassageiro, longitude: longPassageiro)
                     
                     let distanciaMetros = motorLocation.distance(from: passageiroLocation)
-                    
                     let distanciaKM = round(distanciaMetros / 1000)
                     
-                    cell.textLabel?.text = dados["nome"] as? String
-                    cell.detailTextLabel?.text = "\(distanciaKM) km de distância"
+                    var requisicaoMotorista = ""
+                    if let emailMotorista = dados["motoristaEmail"] as? String {
+                        if let emailMotoristaLogado = self.autenticacao.currentUser?.email {
+                            if emailMotorista == emailMotoristaLogado {
+                                requisicaoMotorista = "(ANDAMENTO)"
+                                if let status = dados["status"] as? String {
+                                    if status == StatusCorrida.ViagemFinalizada.rawValue {
+                                        requisicaoMotorista = "(FINALIZADO)"
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                    
+                    if let nomePassageiro = dados["nome"] as? String {
+                        cell.textLabel?.text = "\(nomePassageiro) \(requisicaoMotorista)"
+                        cell.detailTextLabel?.text = "\(distanciaKM) km de distância"
+                    }
                     
                 }
             }
@@ -118,7 +175,6 @@ class MotoristaTableViewController: UITableViewController, CLLocationManagerDele
 
         return cell
     }
-    
 
     /*
     // Override to support conditional editing of the table view.

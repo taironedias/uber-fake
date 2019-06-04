@@ -94,6 +94,11 @@ Quando uma soliciação é realizada, no perfil de qualquer motorista aparece as
   </tr>
 </table>
 
+##### # Tempo de desenvolvimento
+O tempo de desenvolvimento desse projeto foi de aproximadamente 15h55min, segundo os dados coletos pelo Wakatime.
+<img src="/prints/wakatime.png" >
+    
+
 Percebam que o app deveria: 
 * o endereço de destino poderia ser inserido um pin no mapa, em vez de apenas digitar o endereço;
 * calcular o preço da corrida antes do passageiro chamar o Uber;

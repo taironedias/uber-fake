@@ -100,9 +100,8 @@ O tempo de desenvolvimento desse projeto foi de aproximadamente 15h55min, segund
     
 
 Percebam que o app deveria: 
-* o endereço de destino poderia ser inserido um pin no mapa, em vez de apenas digitar o endereço;
+* permitir que o endereço de destino fosse inserido por um pino no mapa, em vez de apenas digitar o endereço;
 * calcular o preço da corrida antes do passageiro chamar o Uber;
-* calcular o preço da corrida conforme a distância;
 * apresentar um tratamento de distância entre o local atual e o destino, e assim, permitir que o motorista finalize a viagem, entre outros.
 
 Mas novamente, esse foi um projeto desenvolvido para fins de estudo e prática da linguagem e componentes do Swift/iOS.
